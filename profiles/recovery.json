@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "board": "lapis",
+  "build": "16452207",
+  "url": "https://dl.google.com/device/recovery/lapis-user/16452207/recovery.zip",
+  "bytes": 7728873477,
+  "sha256": "5bc64936c11d9eb268da03063a443b8fd0bbc0f84d266f9a014231653939f247",
+  "parts": ["system_a", "product_a", "system_ext_a", "vendor_a", "system_dlkm_a", "vendor_dlkm_a"]
+}

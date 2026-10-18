@@ -1,0 +1,26 @@
+{
+  "system_dlkm_a": {
+    "bytes": 9232384,
+    "sha256": "177d0d4782db99812ea359a0ff076c787b04f62bbf79cf948de2436ebc393953"
+  },
+  "vendor_dlkm_a": {
+    "bytes": 18096128,
+    "sha256": "5e0e5f7b515f15746ad63dc4ee2272dad6af8fe1c5f9b25f1e57e3b0e6fe157f"
+  },
+  "vendor_a": {
+    "bytes": 380608512,
+    "sha256": "774cf8d955fae21eaf44333b57860b1baef41a6b2042ad16e6f4fcd2c15dc0a3"
+  },
+  "product_a": {
+    "bytes": 1970524160,
+    "sha256": "428ace4c7044f8612c5eb238b0d92f9a38ab1e0d9c962351f84b5ee4731d09e5"
+  },
+  "system_ext_a": {
+    "bytes": 169435136,
+    "sha256": "551d23c8dd8ef9e473ba939006238fd7d61f9cae76051eee064a5c26deaa16fa"
+  },
+  "system_a": {
+    "bytes": 1136197632,
+    "sha256": "67034fd42103772320b04a8c4fd2421e3d0ed7579846d071c97d44de8a0f11f2"
+  }
+}
