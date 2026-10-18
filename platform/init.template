@@ -1,0 +1,245 @@
+#!/bin/busybox sh
+export PATH=/bin:/sbin
+/bin/busybox --install -s /bin
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t tmpfs -o mode=0755 tmpfs /dev
+mknod -m 600 /dev/console c 5 1
+mknod -m 600 /dev/kmsg c 1 11
+mknod -m 666 /dev/null c 1 3
+mknod -m 666 /dev/zero c 1 5
+mknod -m 666 /dev/random c 1 8
+mknod -m 666 /dev/urandom c 1 9
+mknod -m 620 /dev/tty0 c 4 0
+mknod -m 620 /dev/tty1 c 4 1
+exec </dev/console >/dev/console 2>&1
+log() { echo "GBRUNCH: $*"; echo "<3>GBRUNCH: $*" > /dev/kmsg; }
+stop() {
+ log "STOPPED: $*"
+ if [ -d /backing-data/.gbrunch-native/logs ]; then
+  dmesg > /backing-data/.gbrunch-native/logs/last-kmsg.txt
+  echo "$*" > /backing-data/.gbrunch-native/logs/last-stop.txt
+  sync
+ fi
+ while true; do sleep 3600; done
+}
+log "Google stock kernel $(uname -r); portable Motobook compatibility option"
+mkdir -p /tmp /gbos /ram-source /new /backing-data /dev/block/by-name /dev/mapper /dev/socket /dev/pts
+mount -t tmpfs -o mode=0755 tmpfs /tmp
+mdev -s
+for i in $(seq 0 31); do mknod -m 600 /dev/loop$i b 7 $i 2>/dev/null; done
+mknod -m 600 /dev/loop-control c 10 237 2>/dev/null
+mknod -m 600 /dev/mapper/control c 10 236
+mknod -m 600 /dev/device-mapper c 10 236
+for block in /sys/class/block/nvme*; do
+ [ -e "$block" ] || continue
+ node=/dev/${block##*/}
+ [ -b "$node" ] || stop "Missing NVMe block node: $node"
+ blockdev --setro "$node" || stop "Cannot protect $node"
+ [ "$(blockdev --getro "$node")" = 1 ] || stop "Read-only verification: $node"
+done
+. /hy-targets.cfg
+DEV=
+for attempt in $(seq 1 20); do
+ mdev -s
+ DEV=$(findfs LABEL="$HY_SYS_LABEL" 2>/dev/null)
+ [ -n "$DEV" ] && break
+ sleep 1
+done
+[ -n "$DEV" ] || stop 'Googlebook source missing'
+mount -t vfat -o ro,noatime "$DEV" /ram-source || stop 'Read-only source mount failed'
+[ -d /ram-source/gbos ] || stop 'Existing payload missing'
+payload_kb=$(du -sk /ram-source/gbos /ram-source/EFI/GBRUNCH/vendor.erofs /ram-source/EFI/GBRUNCH/compat.ext4 | awk '{s+=$1} END {print s}')
+available_kb=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)
+[ "$available_kb" -gt "$((payload_kb + 3 * 1024 * 1024))" ] || stop 'Insufficient available RAM'
+mount -t tmpfs -o size=6G,mode=0755 tmpfs /gbos || stop 'RAM payload filesystem failed'
+log 'Copying cached system and compatibility images to RAM'
+cp -a /ram-source/gbos /gbos/ || stop 'System payload copy failed'
+mkdir -p /gbos/gbrunch
+for name in vendor.erofs compat.ext4; do cp /ram-source/EFI/GBRUNCH/$name /gbos/gbrunch/$name || stop 'Compatibility copy failed'; done
+. /gbrunch-hashes.cfg
+echo "$GB_VENDOR_HASH  /gbos/gbrunch/vendor.erofs" | sha256sum -c - || stop 'Vendor image checksum mismatch'
+echo "$GB_COMPAT_HASH  /gbos/gbrunch/compat.ext4" | sha256sum -c - || stop 'Compatibility image checksum mismatch'
+umount /ram-source || stop 'Cannot release source mount'
+G=/gbos/gbos
+. /hy-storage.sh
+# The shared helper is used for identity and power validation only. Its formatter
+# and old /data mount function are NEVER called by this option.
+ssd_stop() { stop "$*"; }
+hy_validate_and_hold_power
+blockdev --setrw "$HY_DISK" || stop 'Cannot enable guarded data partition'
+for block in /sys/class/block/${HY_NODE}p*; do blockdev --setro /dev/${block##*/} || stop 'Partition protection failed'; done
+blockdev --setrw "$HY_DATA" || stop 'Cannot enable Android backing partition'
+for block in /sys/class/block/nvme*; do
+ [ -e "$block" ] || continue
+ node=/dev/${block##*/}
+ case "$node" in "$HY_DISK"|"$HY_DATA") continue;; esac
+ [ "$(blockdev --getro "$node")" = 1 ] || stop "Unrelated partition writable: $node"
+done
+hy_tool blkid "$HY_DATA" | grep -q 'TYPE="ext4"' || stop 'Existing Android backing filesystem is not ext4; no formatting allowed'
+hy_tool blkid "$HY_DATA" | grep -q "LABEL=\"$HY_DATA_LABEL\"" || stop 'Existing Android backing label differs'
+mount -t ext4 -o noatime,nosuid,nodev,nodiscard "$HY_DATA" /backing-data || stop 'Cannot mount existing Android backing filesystem'
+B=/backing-data/.gbrunch-native
+if [ -e "$B" ]; then [ -d "$B" ] && [ ! -L "$B" ] || stop 'Unexpected compatibility directory'; else mkdir -m 0700 "$B" || stop 'Cannot create separate compatibility storage'; fi
+[ "$(stat -c %u "$B")" = 0 ] && [ "$(stat -c %a "$B")" = 700 ] || stop 'Compatibility storage ownership/permissions differ'
+[ ! -L "$B/logs" ] || stop 'Log directory is a symlink'
+mkdir -p "$B/logs"
+L=/tmp/gbrunch-release-logs
+mkdir -p "$L"
+mount -t selinuxfs selinuxfs /sys/fs/selinux || stop 'Cannot expose required SELinux filesystem'
+log 'Existing partitions and unrelated disks protected; Android storage verified'
+create_ext4_image() {
+ image=$1; bytes=$2; label=$3
+ case "$image:$bytes:$label" in "$B/data.ext4:$GB_USERDATA_BYTES:GBRUNCH_DATA"|"$B/metadata.ext4:33554432:GBRUNCH_META") ;; *) stop 'Unapproved image creation target';; esac
+ [ ! -L "$image" ] || stop 'Image path is a symlink'
+ [ -e "$image" ] || stop 'Migrated image missing; no initialization allowed'
+ [ -f "$image" ] && [ ! -L "$image" ] && [ "$(stat -c %h "$image")" = 1 ] && [ "$(stat -c %s "$image")" = "$bytes" ] || stop 'Existing image type/size changed'
+ hy_tool blkid "$image" | grep -q "LABEL=\"$label\"" || stop 'Existing compatibility image label differs; no overwrite'
+}
+create_ext4_image "$B/data.ext4" "$GB_USERDATA_BYTES" GBRUNCH_DATA
+create_ext4_image "$B/metadata.ext4" 33554432 GBRUNCH_META
+# BootControl needs a misc block device for its bootloader/Virtual A/B state.
+# Supply only a new bounded regular file; never alias a physical partition.
+create_misc_image() {
+ image=$B/misc.bin
+ [ ! -L "$image" ] || stop 'Misc image is a symlink'
+ [ -e "$image" ] || stop 'Migrated misc state missing; no initialization allowed'
+ [ -f "$image" ] && [ ! -L "$image" ] && [ "$(stat -c %h "$image")" = 1 ] && [ "$(stat -c %s "$image")" = 1048576 ] && [ "$(stat -c %u "$image")" = 0 ] && [ "$(stat -c %a "$image")" = 600 ] || stop 'Existing misc file type/size/ownership differs; no overwrite'
+}
+create_misc_image
+[ ! -L "$B/logs.fat" ] || stop 'Log image is a symlink'
+if [ ! -e "$B/logs.fat" ]; then
+ (set -C; : > "$B/logs.fat") || stop 'Log image already appeared'
+ chmod 0600 "$B/logs.fat"
+ gzip -dc /gbrunch-logs.fat.gz > "$B/logs.fat" || stop 'Log image initialization failed'
+fi
+[ -f "$B/logs.fat" ] && [ ! -L "$B/logs.fat" ] && [ "$(stat -c %h "$B/logs.fat")" = 1 ] && [ "$(stat -c %s "$B/logs.fat")" = 67108864 ] || stop 'Unexpected log image'
+hy_tool blkid "$B/logs.fat" | grep -q 'LABEL="GBLOG"' || stop 'Unexpected log filesystem label'
+log 'Loading original Google modules with stock Xe and matching firmware'
+cp -a /lib/firmware/. "$G/firmware/" || stop 'Cannot stage pinned GPU firmware in RAM'
+echo "$G/firmware" > /sys/module/firmware_class/parameters/path
+for name in zram battery ac video intel_lpss_pci intel_lpss_acpi i2c_designware_pci i2c_designware_platform i2c_hid_acpi pinctrl_meteorlake; do
+ modprobe "$name" >> "$L/modules.txt" 2>&1 || true
+done
+modprobe xe >> "$L/modules.txt" 2>&1 || stop 'Original Google Xe module failed; see modules.txt'
+for attempt in $(seq 1 20); do
+ mdev -s
+ driver=$(basename "$(readlink -f /sys/bus/pci/devices/0000:00:02.0/driver)")
+ [ "$driver" = xe ] && [ -e /sys/class/drm/renderD128 ] && break
+ sleep 1
+done
+{
+ echo '== bound GPU'; readlink -f /sys/bus/pci/devices/0000:00:02.0/driver
+ echo '== DRM nodes'; ls -l /sys/class/drm /dev/dri
+ echo '== PCI IDs'; cat /sys/bus/pci/devices/0000:00:02.0/vendor /sys/bus/pci/devices/0000:00:02.0/device
+} > "$L/gpu.txt" 2>&1
+[ "$driver" = xe ] && [ -e /sys/class/drm/renderD128 ] || stop 'Stock Xe did not create a render node; saved early GPU/kernel logs'
+# Senary SN6140 (14f1:1f87): request_module cannot find Android's modprobe
+# before switch_root. Register both codec drivers before probing PCI audio.
+# SOF topology LED controls also request snd-ctl-led. A missing control layer
+# makes an otherwise parsed topology fail with ENOENT before card registration.
+for name in snd_ctl_led snd_hda_codec_conexant snd_hda_codec_intelhdmi snd_soc_dmic snd_soc_skl_hda_dsp snd_sof_pci_intel_mtl; do
+ modprobe "$name" >> "$L/modules.txt" 2>&1 || true
+done
+# The USB camera provider allocates frames from this stock DMA-BUF heap.
+modprobe system_heap >> "$L/modules.txt" 2>&1 || true
+mdev -s
+# Matching Realtek stack, compiled for this exact Google kernel. A peripheral
+# failure is recorded but must not stop the previously working Android boot.
+modprobe rtw89_8922ae >> "$L/modules.txt" 2>&1 || true
+{
+ echo '== Realtek wireless PHY'; ls -l /sys/class/ieee80211
+ echo '== Realtek PCI binding'
+ for pci in /sys/bus/pci/devices/*; do
+  [ "$(cat "$pci/vendor" 2>/dev/null)" = 0x10ec ] || continue
+  [ "$(cat "$pci/device" 2>/dev/null)" = 0x8922 ] || continue
+  readlink -f "$pci/driver"; ls -l "$pci/net"
+ done
+} > "$L/wifi.txt" 2>&1
+. /npu-stage.sh || log 'Optional Intel NPU preload failed; normal Android boot continues'
+# Coldplug matching modules; never try the old custom-kernel module tree.
+for pass in 1 2 3; do
+ for alias_file in /sys/bus/pci/devices/*/modalias /sys/bus/acpi/devices/*/modalias /sys/bus/i2c/devices/*/modalias /sys/bus/usb/devices/*/modalias; do
+  [ -f "$alias_file" ] || continue
+  modprobe -q "$(cat "$alias_file")" >> "$L/modules.txt" 2>&1 || true
+ done
+ mdev -s
+done
+log 'Mounting original Google system images and independent vendor/security compatibility views'
+losetup -r /dev/loop7 "$G/super.img" || stop 'Super image mapping failed'
+ln -sf /dev/loop7 /dev/block/by-name/super
+i=0
+while read name start sectors; do
+ case "$name" in system_a) target=/new;; *) target=/new/${name%_a};; esac
+ mkdir -p "$target" 2>/dev/null
+ if [ "$name" = vendor_a ]; then image=/gbos/gbrunch/vendor.erofs;offset=0;else image=$G/super.img;offset=$((start * 512));fi
+ losetup -r -o "$offset" /dev/loop$i "$image" && mount -t erofs -o ro /dev/loop$i "$target" || stop "Mount failed: $name"
+ i=$((i+1))
+done < "$G/super.layout"
+cp /gbrunch-init-permissive /gbos/gbrunch/init-permissive || stop 'Cannot stage requested permissive init in RAM'
+chmod 0755 /gbos/gbrunch/init-permissive
+mount --bind /gbos/gbrunch/init-permissive /new/system/bin/init || stop 'Cannot apply scoped permissive startup overlay'
+# This exact Arrow Lake ID is missing from both stock Minigbm Xe classifiers.
+# Keep original EROFS bytes; overlay only the checksum-pinned RAM copies.
+[ "$(cat /sys/bus/pci/devices/0000:00:02.0/vendor)" = 0x8086 ] && [ "$(cat /sys/bus/pci/devices/0000:00:02.0/device)" = 0x7d51 ] || stop 'Minigbm correction is scoped to Intel 8086:7d51 only'
+mkdir -p /gbos/gbrunch/minigbm || stop 'Cannot stage Minigbm RAM overlay'
+while read name original patched; do
+ case "$name" in libgbm.so|libminigbm_gralloc.so) ;; *) stop 'Unexpected Minigbm overlay target';; esac
+ echo "$original  /new/vendor/lib64/$name" | sha256sum -c - || stop 'Original Minigbm library checksum differs; no patch'
+ echo "$patched  /gbrunch-minigbm/$name" | sha256sum -c - || stop 'Minigbm overlay payload checksum differs'
+ cp /gbrunch-minigbm/$name /gbos/gbrunch/minigbm/$name || stop 'Cannot copy Minigbm overlay into RAM'
+ chmod 0644 /gbos/gbrunch/minigbm/$name
+ mount --bind /gbos/gbrunch/minigbm/$name /new/vendor/lib64/$name || stop 'Cannot apply scoped Minigbm RAM overlay'
+done < /gbrunch-minigbm.cfg
+log 'Minigbm Xe classifier adds 7d51 using existing generation-12 MTL allocation path'
+for n in dev proc sys; do mount --bind /$n /new/$n || stop 'Early Android device bind failed'; done
+while read name start sectors; do
+ LD_LIBRARY_PATH=/system/lib64/bootstrap:/system/lib64 chroot /new /system/bin/bootstrap/linker64 /system/bin/dmctl create "$name" -ro linear 0 "$sectors" /dev/loop7 "$start" >> "$L/dm.txt" 2>&1 || stop "Logical partition mapping failed: $name"
+done < "$G/super.layout"
+for n in sys proc dev; do umount /new/$n || stop 'Cannot release temporary Android bind'; done
+losetup -r /dev/loop21 /gbos/gbrunch/compat.ext4 && mount -t ext4 -o ro,noload /dev/loop21 /new/oem || stop 'Compatibility image mount failed'
+mount --bind "$G/firmware" /new/oem/firmware || stop 'Firmware view bind failed'
+echo '9e91b76d05d447ed7d964d88baacca2468de35e349bf9d0185753c9a31e5c086  /new/oem/init.gbrunch.rc' | sha256sum -c - || stop 'Original compatibility init differs; no runtime overlay'
+cp /gbrunch-runtime-init.rc /gbos/gbrunch/runtime-init.rc || stop 'Cannot stage quiet runtime init'
+chmod 0644 /gbos/gbrunch/runtime-init.rc
+mount --bind /gbos/gbrunch/runtime-init.rc /new/oem/init.gbrunch.rc || stop 'Cannot apply quiet runtime init overlay'
+. /gbrunch-peripheral-stage.sh || log 'Peripheral overlay failed; inspect saved audio check'
+. /npu-access-stage.sh || log 'Optional NPU device access overlay skipped; normal boot continues'
+. /terminal-secretkeeper-stage.sh || log 'Terminal Secretkeeper overlay skipped; inspect terminal-early.txt'
+. /power-efficiency-stage.sh || log 'Power profile overlay skipped; normal Android boot continues'
+. /phonehub-stage.sh || log 'Phone Hub LAN repair staging skipped'
+. /platform-telemetry-stage.sh || log 'Optional platform telemetry staging skipped; native boot continues'
+. /power-profile-stage.sh
+gbos_power_profile_stage /sys /new/vendor /new/system/framework/framework-res.apk /gbos/gbrunch/power-profile /gbos-power-profile.apk >> "$L/power-profile.txt" 2>&1 || log 'Optional battery accounting profile skipped; original Android resources retained'
+# Release: automatic performance sampler removed.
+for pair in '22 data.ext4 userdata' '23 metadata.ext4 metadata' '24 logs.fat GBLOG'; do
+ set -- $pair
+ losetup /dev/loop$1 "$B/$2" || stop 'Separate data/log image mapping failed'
+ ln -sf /dev/loop$1 /dev/block/by-name/$3
+done
+[ ! -e /dev/block/by-name/misc ] && [ ! -L /dev/block/by-name/misc ] || stop 'Unexpected existing misc device; no replacement'
+losetup /dev/loop25 "$B/misc.bin" || stop 'Separate misc image mapping failed'
+[ "$(blockdev --getsize64 /dev/loop25)" = 1048576 ] || stop 'Separate misc device size differs'
+ln -s /dev/loop25 /dev/block/by-name/misc || stop 'Cannot expose separate misc device'
+mount -t ext4 -o noatime,nosuid,nodev,nodiscard,data=journal /dev/loop23 /new/metadata || stop 'Separate metadata image mount failed'
+# Android's mount_all owns the separate data, metadata and log loop files. Its
+# fstab has no formattable, fileencryption or removable-disk entries.
+mount -t tmpfs -o mode=0755 tmpfs /new/debug_ramdisk
+mount -t tmpfs -o mode=0755 tmpfs /new/second_stage_resources
+mount -t tmpfs -o mode=0755 tmpfs /new/mnt
+# Preserve the original system file; overlay only its two discard-tuning writes.
+sed 's#^    write /dev/sys/block/by-name/\(userdata\|rootdisk\)/queue/discard_max_bytes 134217728$#    write /dev/sys/block/by-name/\1/queue/discard_max_bytes 0#' /new/system/etc/init/hw/init.rc > /gbos/gbrunch/system-init.rc
+mount --bind /gbos/gbrunch/system-init.rc /new/system/etc/init/hw/init.rc || stop 'Discard policy overlay failed'
+mount --move /gbos /new/postinstall || stop 'Cannot retain RAM compatibility images'
+# vold unmountAll clears /mnt/* at startup. Keep loop backing storage outside
+# that tree, beneath the retained RAM payload mount; never create on EROFS.
+mkdir -p /new/postinstall/gbrunch-backing || stop 'Cannot create retained backing mount point'
+mount --move /backing-data /new/postinstall/gbrunch-backing || stop 'Cannot retain loop backing mount'
+mount -t devpts devpts /dev/pts -o mode=0620,ptmxmode=0666
+mknod -m 666 /dev/ptmx c 5 2 2>/dev/null
+sync
+log 'Starting Android with GBRUNCH software security and user-requested permissive SELinux'
+mount --move /dev /new/dev
+mount --move /proc /new/proc
+mount --move /sys /new/sys
+exec switch_root /new /system/bin/init selinux_setup

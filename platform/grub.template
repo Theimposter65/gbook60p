@@ -1,0 +1,9 @@
+set timeout=0
+set default=0
+insmod efi_gop
+set gfxpayload=keep
+terminal_output console
+menuentry 'Googlebook OS - Motobook 60 Pro' {
+ linux /EFI/GBRUNCH/kernel rdinit=/init root=/dev/ram0 console=ttynull panic=0 loglevel=3 printk.time=1 printk.devkmsg=on log_buf_len=8M drm.debug=0 androidboot.init_log_level=warning nvme.max_host_mem_size_mb=0 nvme.io_queue_depth=32 nvme_core.default_ps_max_latency_us=0 pcie_aspm=off module_blacklist=i915 xe.force_probe=7d51 androidboot.hardware=android-desktop androidboot.hardware.platform=android-desktop androidboot.slot_suffix=_a androidboot.force_normal_boot=1 androidboot.vbmeta.size=6720 androidboot.vbmeta.hash_alg=sha256 androidboot.vbmeta.digest=bc270dbed03f9068d69d3da5dcbfcf80a947186d36b5dd4c5a6bcc5f7dc45ec2 androidboot.vbmeta.device_state=unlocked androidboot.verifiedbootstate=orange androidboot.veritymode=enforcing androidboot.hypervisor.protected_vm.supported=0 androidboot.vendor.apex.com.android.hardware.keymint.strongbox.desktop=none androidboot.init_rc=/oem/init.gbrunch.rc enforcing=0 androidboot.selinux=permissive quiet snd_intel_dspcfg.dsp_driver=3 snd_sof.tplg_filename=sof-hda-generic-ace1-2ch.tplg snd_sof.tplg_path=intel/sof-ace-tplg
+ initrd /EFI/GBRUNCH/initrd.gz
+}

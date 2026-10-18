@@ -1,0 +1,171 @@
+<device name="Android">
+  <item name="battery.capacity">5305.039788</item>
+  <item name="cpu.active">3.710345</item>
+  <item name="ambient.on.display0">0</item>
+  <item name="screen.on.display0">205.958621</item>
+  <item name="screen.full.display0">279.413793</item>
+  <item name="wifi.controller.idle">0.62069</item>
+  <item name="wifi.controller.rx">42.268966</item>
+  <item name="wifi.controller.tx">114.903448</item>
+  <item name="wifi.controller.voltage">11310</item>
+  <item name="bluetooth.controller.idle">0.986207</item>
+  <item name="bluetooth.controller.rx">3.096552</item>
+  <item name="bluetooth.controller.tx">3.434483</item>
+  <item name="bluetooth.controller.voltage">11310</item>
+  <array name="cpu.clusters.cores">
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+    <value>1</value>
+  </array>
+  <array name="cpu.core_speeds.cluster0">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster0">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy0">0</item>
+  <array name="cpu.scaling_step_power.policy0">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster1">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster1">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy1">0</item>
+  <array name="cpu.scaling_step_power.policy1">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster2">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster2">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy2">0</item>
+  <array name="cpu.scaling_step_power.policy2">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster3">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster3">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy3">0</item>
+  <array name="cpu.scaling_step_power.policy3">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster4">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster4">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy4">0</item>
+  <array name="cpu.scaling_step_power.policy4">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster5">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster5">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy5">0</item>
+  <array name="cpu.scaling_step_power.policy5">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster6">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster6">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy6">0</item>
+  <array name="cpu.scaling_step_power.policy6">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster7">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster7">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy7">0</item>
+  <array name="cpu.scaling_step_power.policy7">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster8">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster8">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy8">0</item>
+  <array name="cpu.scaling_step_power.policy8">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster9">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster9">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy9">0</item>
+  <array name="cpu.scaling_step_power.policy9">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster10">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster10">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy10">0</item>
+  <array name="cpu.scaling_step_power.policy10">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster11">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster11">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy11">0</item>
+  <array name="cpu.scaling_step_power.policy11">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster12">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster12">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy12">0</item>
+  <array name="cpu.scaling_step_power.policy12">
+    <value>0</value>
+  </array>
+  <array name="cpu.core_speeds.cluster13">
+    <value>0</value>
+  </array>
+  <array name="cpu.speeds.cluster13">
+    <value>0</value>
+  </array>
+  <item name="cpu.scaling_policy_power.policy13">0</item>
+  <array name="cpu.scaling_step_power.policy13">
+    <value>0</value>
+  </array>
+</device>

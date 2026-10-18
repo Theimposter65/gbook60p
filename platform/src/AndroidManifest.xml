@@ -1,0 +1,5 @@
+<manifest xmlns:ns0="http://schemas.android.com/apk/res/android" package="org.gbos.powerprofile.motorola83ny" ns0:versionCode="1" ns0:versionName="1.0">
+  <uses-sdk ns0:minSdkVersion="37" ns0:targetSdkVersion="37" />
+  <application ns0:hasCode="false" />
+  <overlay ns0:priority="1" ns0:targetPackage="android" ns0:isStatic="true" />
+</manifest>

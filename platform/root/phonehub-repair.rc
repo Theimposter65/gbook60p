@@ -1,0 +1,10 @@
+service gbos-phonehub-lan /system/bin/sh /postinstall/gbrunch/phonehub-lan-repair.sh
+    class late_start
+    user root
+    group root system
+    seclabel u:r:vendor_init:s0
+    disabled
+    oneshot
+
+on property:sys.boot_completed=1
+    exec_start gbos-phonehub-lan

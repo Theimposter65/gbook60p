@@ -1,0 +1,8 @@
+service vendor.camera-provider-2-7-legacy-wrapper /vendor/bin/hw/android.hardware.camera.provider@2.7-service-legacy-wrapper
+    class hal
+    disabled
+    user system
+    group system
+    capabilities SYS_NICE
+    rlimit rtprio 10 10
+    task_profiles CameraServiceCapacity CameraServicePerformance

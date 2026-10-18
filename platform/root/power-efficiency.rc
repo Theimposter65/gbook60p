@@ -1,0 +1,14 @@
+service gbos-power-adapt /system/bin/sh /postinstall/gbrunch/power-efficiency-apply.sh
+    class late_start
+    user root
+    group root system
+    seclabel u:r:vendor_init:s0
+    disabled
+    oneshot
+
+on post-fs-data
+    exec_start gbos-power-adapt
+
+on property:vendor.powerhal.gbos.ready=1
+    start vendor.power-hal-aidl
+    setprop vendor.powerhal.init 1

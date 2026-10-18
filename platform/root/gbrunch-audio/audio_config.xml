@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<audio_config>
+	<!-- Native SN6140: card, PCM and jack names resolved from kernel devices. -->
+	<SoundCardName>hw:PCH</SoundCardName>
+	<HiFi>
+		<Speaker>
+			<PlaybackPCM>hw:PCH,0</PlaybackPCM>
+		</Speaker>
+		<Headphone>
+			<PlaybackPCM>hw:PCH,0</PlaybackPCM>
+			<JackDev>@GB_HEADPHONE_JACK@</JackDev>
+			<JackSwitch>2</JackSwitch>
+		</Headphone>
+		<InternalMic>
+			<CapturePCM>hw:PCH,@GB_DMIC_PCM@</CapturePCM>
+			<IntrinsicSensitivity>-2600</IntrinsicSensitivity>
+			<RampUpMs>100</RampUpMs>
+		</InternalMic>
+		<Mic>
+			<CapturePCM>hw:PCH,0</CapturePCM>
+			<CaptureMixerElem>Capture</CaptureMixerElem>
+			<JackDev>@GB_MIC_JACK@</JackDev>
+		</Mic>
+		<HDMI1>
+			<PlaybackPCM>hw:PCH,@GB_HDMI1@</PlaybackPCM>
+			<JackDev>@GB_HDMI_JACK1@</JackDev>
+			<PlaybackChannels>2</PlaybackChannels>
+		</HDMI1>
+		<HDMI2>
+			<PlaybackPCM>hw:PCH,@GB_HDMI2@</PlaybackPCM>
+			<JackDev>@GB_HDMI_JACK2@</JackDev>
+			<PlaybackChannels>2</PlaybackChannels>
+		</HDMI2>
+		<HDMI3>
+			<PlaybackPCM>hw:PCH,@GB_HDMI3@</PlaybackPCM>
+			<JackDev>@GB_HDMI_JACK3@</JackDev>
+			<PlaybackChannels>2</PlaybackChannels>
+		</HDMI3>
+	</HiFi>
+</audio_config>

@@ -1,0 +1,26 @@
+service vendor.health-default /vendor/bin/hw/android.hardware.health-service.android-desktop
+    class hal
+    setenv LD_PRELOAD /vendor/lib64/soundfx/libgbos_usb_role.so
+    user system
+    group system
+    # temporarily don't enable CAP_BLOCK_SUSPEND to w/a problems with EPOLLWAKEUP (b/194314791)
+    #capabilities BLOCK_SUSPEND
+    file /dev/kmsg w
+    interface aidl vendor.google.desktop.health.IDesktopHealth/default
+
+service vendor.charger /vendor/bin/hw/android.hardware.health-service.android-desktop --charger
+    class charger
+    seclabel u:r:charger_vendor:s0
+    user system
+    group system wakelock input
+    capabilities SYS_BOOT
+    file /dev/kmsg w
+    file /sys/fs/pstore/console-ramoops-0 r
+    file /sys/fs/pstore/console-ramoops r
+    file /proc/last_kmsg r
+
+service vendor.ec-battery-limits-setprop /vendor/bin/hw/ec_battery_limits
+    class hal
+    user system
+    group cros_ec
+    oneshot

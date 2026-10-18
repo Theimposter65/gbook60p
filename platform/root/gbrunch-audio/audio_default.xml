@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Native SN6140: ALSA card id is resolved at boot; originals retained. -->
+<AudioConfiguration>
+  <soundcard>PCH</soundcard>
+  <audio-config-dir>gbos-sn6140</audio-config-dir>
+</AudioConfiguration>

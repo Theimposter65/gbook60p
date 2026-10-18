@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "kernel_release": "6.18.21-android17-5-g3938c8d97142-ab16302624",
+  "kernel_sha256": "7816c5d5b3500093e597b7362ecab103d5a32141b100d3eb7a8b33221fce7f41",
+  "upstream_commit": "a8936fd33e50efda3f1b36e332ab30b67b709ab1",
+  "owned_helper_sources": "platform/src",
+  "derived_configuration_sha256": {
+    "gbrunch-camera-legacy.rc": "22187730f8cdb61d746c9b7731a7b3173f8a6f350038b24083b181dc53558240",
+    "gbrunch-camera-legacy.xml": "ecb3fa014bf1ef5155fa4a60e3b8278c99fdf4767c34b2667e0137e891509861",
+    "gbrunch-usb-ports-template.json": "94412f5f157b65938625bbb0ca67b1d8227d3306d7c992dd5afe5f25da74ab07"
+  }
+}

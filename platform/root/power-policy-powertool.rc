@@ -1,0 +1,35 @@
+on property:sys.boot_completed=1
+    # Default setup runs once before our generated Power HAL configuration.
+    setprop vendor.powertool.init 1
+
+# Set scaling governor.
+# Options:
+#   `performance`
+#   `schedutil`
+#   `walt`
+#   `powersave`
+on property:vendor.powerhal.governor=*
+    exec_background - root system -- /vendor/bin/powertool set-governor ${vendor.powerhal.governor}
+
+
+# Set energy performance preference and its associated scaling governor.
+# Options:
+#   `maximum`
+#   `performance`
+#   `balance-performance`
+#   `balance-power`
+#   `power`
+#   `[0, 255]`
+on property:vendor.powerhal.epp=*
+    exec_background - root system -- /vendor/bin/powertool set-epp ${vendor.powerhal.epp}
+
+# Set SocSlider preference.
+# Options:
+#   `performance`
+#   'balanced <BALANCE>'
+#   'balanced <BALANCE> <OFFSET>'
+#   `low-power'
+# Where <BALANCE> is an integer in range[1,5] and <OFFSET> is an integer in range[0,5],
+# with the constraint that BALANCE + OFFSET <= 6.
+on property:vendor.powerhal.socslider=*
+    exec_background - root system -- /vendor/bin/powertool set-soc-slider ${vendor.powerhal.socslider}

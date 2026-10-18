@@ -1,0 +1,29 @@
+gbook60p — Googlebook OS installation kit for Motorola Motobook 60 Pro
+Maintainer: theimposter65
+
+This is a new source repository. Commit authorship does not replace upstream
+copyright or imply authorship of the Linux kernel, Google OS or third-party code.
+
+GBRUNCH: https://github.com/danbyumagic/gbrunch
+Source snapshot a8936fd33e50efda3f1b36e332ab30b67b709ab1.
+Copyright (c) 2026 GBRUNCH contributors; MIT (licenses/GBRUNCH-MIT.txt).
+Used/adapted: GPT validation/planning patterns in tools/storage.py,
+tools/extend_vendor_policy.c, profiles/policy.json and graphics-client list,
+the software-security compatibility architecture and precompiled V7 assets.
+GBRUNCH's HP validation evidence does not establish Motobook compatibility.
+
+gbos-vm: https://github.com/linuxkid473/gbos-vm
+EROFS metadata reader tools/erofs_metadata.py; MIT (licenses/gbos-vm-MIT.txt).
+The boot architecture was also informed by linuxkid473/gbos-x86.
+No upstream Git history or Google proprietary binaries have been imported.
+
+Linux kernel and kernel modules: GPL-2.0-only and per-file kernel licenses.
+GRUB: GPL-3.0-or-later. BusyBox: GPL-2.0-only.
+Intel/Realtek/SOF firmware: the applicable upstream firmware licenses.
+AOSP security/boot services: Apache-2.0 and notices in the compatibility assets.
+Musl/util-linux and bundled tool libraries retain their upstream licenses.
+Precompiled provenance and source locations: docs/KERNEL.md and asset SOURCES.json.
+
+Google recovery, system/vendor software and Google services remain Google's
+and their suppliers' property, under their own terms. They are obtained and
+derived locally, never committed or included in the release asset.

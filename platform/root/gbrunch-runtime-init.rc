@@ -1,0 +1,211 @@
+import /postinstall/gbrunch/platform-telemetry.rc
+import /postinstall/gbrunch/phonehub-repair.rc
+import /postinstall/gbrunch/power-efficiency.rc
+import /system/etc/init/hw/init.rc
+import /system/etc/init/aconfigd.rc
+import /system/etc/init/aisealhostservice.rc
+import /system/etc/init/android.system.suspend-service.rc
+import /system/etc/init/aoad.rc
+import /system/etc/init/apexd.rc
+import /system/etc/init/arc_app_data_migrator.rc
+import /system/etc/init/arc_media_migrator.rc
+import /system/etc/init/atrace.rc
+import /system/etc/init/audioserver.rc
+import /system/etc/init/berberis_arm_or_arm64.rc
+import /system/etc/init/bert_collector.rc
+import /system/etc/init/blank_screen.rc
+import /system/etc/init/bootanim.rc
+import /system/etc/init/bootstat.rc
+import /system/etc/init/cameraserver.rc
+import /system/etc/init/casefolding_remover.rc
+import /system/etc/init/chrome_data_migrator.rc
+import /system/etc/init/cppreopts.rc
+import /system/etc/init/credstore.rc
+import /system/etc/init/dmesgd.rc
+import /system/etc/init/drmserver.rc
+import /system/etc/init/dumpstate.rc
+import /system/etc/init/ec_crash_collector.rc
+import /system/etc/init/flags_health_check.rc
+import /system/etc/init/gatekeeperd.rc
+import /system/etc/init/gpuservice.rc
+import /system/etc/init/gsid.rc
+import /system/etc/init/heapprofd.rc
+import /system/etc/init/hidservice.rc
+import /system/etc/init/idmap2d.rc
+import /system/etc/init/incidentd.rc
+import /system/etc/init/init-perfetto.rc
+import /system/etc/init/init.houdini.rc
+import /system/etc/init/installd.rc
+import /system/etc/init/kcmdlinectrl.rc
+import /system/etc/init/kcmdlinemodprobe.rc
+import /system/etc/init/keystore2.rc
+import /system/etc/init/llkd.rc
+import /system/etc/init/lmkd.rc
+import /system/etc/init/logd.rc
+import /system/etc/init/lpdumpd.rc
+import /system/etc/init/mdnsd.rc
+import /system/etc/init/media.codeclist.generator.rc
+import /system/etc/init/mediaextractor.rc
+import /system/etc/init/mediametrics.rc
+import /system/etc/init/mediaserver.rc
+import /system/etc/init/misctrl.rc
+import /system/etc/init/mmd.rc
+import /system/etc/init/mtectrl.rc
+import /system/etc/init/netbpfload.rc
+import /system/etc/init/netd.rc
+import /system/etc/init/odsign.rc
+import /system/etc/init/omapi.rc
+import /system/etc/init/perfetto.rc
+import /system/etc/init/pinweaver_storaged.rc
+import /system/etc/init/pmgd.rc
+import /system/etc/init/prefetch.rc
+import /system/etc/init/prev_boot_dump.rc
+import /system/etc/init/prng_seeder.rc
+import /system/etc/init/recovery-persist.rc
+import /system/etc/init/rss_hwm_reset.rc
+import /system/etc/init/servicemanager.rc
+import /system/etc/init/simpleperf.rc
+import /system/etc/init/snapuserd.rc
+import /system/etc/init/storaged.rc
+import /system/etc/init/surfaceflinger.rc
+import /system/etc/init/timberslide.rc
+import /system/etc/init/tombstoned.rc
+import /system/etc/init/traced_perf.rc
+import /system/etc/init/tradeinmode.rc
+import /system/etc/init/udsattestation.rc
+import /system/etc/init/uncrypt.rc
+import /system/etc/init/usbd.rc
+import /system/etc/init/virtual_camera.hal.rc
+import /system/etc/init/vold.rc
+import /system/etc/init/wifi.rc
+import /system/etc/init/zygote_next64.rc
+import /system_ext/etc/init/android.hardware.audio.parameter_parser.android-desktop.rc
+import /system_ext/etc/init/apgetty.rc
+import /system_ext/etc/init/diag-service.rc
+import /system_ext/etc/init/init.repairmode.rc
+import /system_ext/etc/init/lowbatteryalert.rc
+import /system_ext/etc/init/procfs-reader.rc
+import /system_ext/etc/init/rpmb_dev.desktop.system.rc
+import /system_ext/etc/init/serialservice.rc
+import /system_ext/etc/init/super-partition-utils.rc
+import /vendor/etc/init/adb-usb-bridge-service.rc
+import /vendor/etc/init/allocator.rc
+import /vendor/etc/init/amp_calib_service.rc
+import /vendor/etc/init/android.hardware.camera.provider-usb-service.android-desktop.rc
+import /vendor/etc/init/android.hardware.camera.provider@2.7-service-legacy-wrapper.rc
+import /vendor/etc/init/android.hardware.dumpstate-service-desktop.rc
+import /vendor/etc/init/android.hardware.health-service.android-desktop.rc
+import /vendor/etc/init/android.hardware.lights-service.android-desktop.rc
+import /vendor/etc/init/android.hardware.media.c2-cros-codecs-service.rc
+import /vendor/etc/init/android.hardware.npu-intel-service.rc
+import /vendor/etc/init/android.hardware.power-service.pixel-libperfmgr.rc
+import /vendor/etc/init/android.hardware.power.stats.desktop.rc
+import /vendor/etc/init/android.hardware.sensors-service-multihal.rc
+import /vendor/etc/init/android.hardware.thermal-service.pixel.rc
+import /vendor/etc/init/android.hardware.usb-service.desktop.rc
+import /vendor/etc/init/android.hardware.wifi-service.rc
+import /vendor/etc/init/android.hardware.wifi.supplicant-service.rc
+import /vendor/etc/init/bluetooth-service-desktop.rc
+import /vendor/etc/init/boringssl_self_test.rc
+import /vendor/etc/init/camera-tool-executor.rc
+import /vendor/etc/init/com.android.desktop.wifi_ext-service.rc
+import /vendor/etc/init/disk_info_service.rc
+import /vendor/etc/init/dms-service.rc
+import /vendor/etc/init/dump_trigger.rc
+import /vendor/etc/init/ec-executor.rc
+import /vendor/etc/init/hal_desktop_charge_control_default.rc
+import /vendor/etc/init/hostapd.android.rc
+import /vendor/etc/init/hwc3-drm.rc
+import /vendor/etc/init/i2c-executor.rc
+import /vendor/etc/init/init.adbd-killer.rc
+import /vendor/etc/init/init.device-x86.rc
+import /vendor/etc/init/keyboard_proxy_service.rc
+import /vendor/etc/init/memtrack-default.rc
+import /vendor/etc/init/npuhal_proxy_service.rc
+import /vendor/etc/init/pixel-thermal-symlinks.rc
+import /vendor/etc/init/power_attr_manager.rc
+import /vendor/etc/init/powerhal_proxy_service.rc
+import /vendor/etc/init/powertool.rc
+import /vendor/etc/init/snapshot_collector.rc
+import /vendor/etc/init/storage_metrics_service.rc
+import /vendor/etc/init/suspend_diagnostics.rc
+import /vendor/etc/init/suspend_notification_service.rc
+import /vendor/etc/init/sys_tuner.rc
+import /vendor/etc/init/thermal-profile-setter-service.rc
+import /vendor/etc/init/touchpad-inhibitor-service.rc
+import /vendor/etc/init/trusty_vm_cid.rc
+import /vendor/etc/init/ueventmond-service.rc
+import /vendor/etc/init/vendor.dolby.media.c2-default-service-dax-desktop.rc
+import /vendor/etc/init/vendor.google.desktop.oemlock-service.rc
+import /vendor/etc/init/vpd-executor.rc
+import /product/etc/init
+import /odm/etc/init
+
+on early-init
+    # Release: preserve acceleration/ADPF; disable optional rendering statistics.
+    setprop debug.sf.renderengine_gpu_stats false
+    setprop debug.hwui.profile false
+    setprop debug.hwui.skia_tracing_enabled false
+    setprop debug.hwui.skia_use_perfetto_track_events false
+    setprop debug.renderengine.skia_tracing_enabled false
+    setprop debug.renderengine.skia_use_perfetto_track_events false
+    setprop debug.atrace.tags.enableflags 0
+    setprop persist.traced.enable 0
+    write /sys/module/firmware_class/parameters/path /oem/firmware
+    write /sys/module/drm/parameters/debug 0
+    chmod 0644 /sys/module/firmware_class/parameters/path
+    chmod 0644 /sys/module/drm/parameters/debug
+    setprop vendor.hwc.drm.force_color_mode -1
+    setprop vendor.hwc.drm.persistent_hdr false
+    setprop vendor.hwc.drm.enable_color_pipeline false
+    setprop vendor.hwc.use_log_gamma_lut true
+    setprop qemu.sf.lcd_density 260
+    setprop ro.vendor.boot_security_patch 2026-09-01
+    write /dev/kmsg "GBRUNCH: independent compatibility init loaded"
+    mount none /oem/fstab.android-desktop /vendor/etc/fstab.android-desktop bind
+    mount none /oem/framework-manifest.xml /system_ext/etc/vintf/manifest.xml bind
+    mount none /oem/security-manifest.xml /vendor/etc/vintf/manifest/android.hardware.gatekeeper-service.trusty.xml bind
+    mount none /oem/weaver-manifest.xml /vendor/etc/vintf/manifest/android.hardware.weaver-service.android-desktop.xml bind
+
+service gbrunch.keymint /oem/keymint/bin/hw/android.hardware.security.keymint-service.nonsecure
+    class early_hal
+    user nobody
+    setenv LD_LIBRARY_PATH /oem/keymint/lib64
+    seclabel u:r:hal_keymint_default:s0
+    interface aidl android.hardware.security.keymint.IKeyMintDevice/default
+
+service gbrunch.gatekeeper /oem/gatekeeper/bin/hw/android.hardware.gatekeeper-service.nonsecure
+    class early_hal
+    user system
+    group system
+    setenv LD_LIBRARY_PATH /oem/gatekeeper/lib64
+    seclabel u:r:hal_gatekeeper_default:s0
+    interface aidl android.hardware.gatekeeper.IGatekeeper/default
+
+service gbrunch.boot /oem/boot/bin/hw/android.hardware.boot-service.default
+    class early_hal
+    user root
+    group root
+    seclabel u:r:hal_bootctl_default:s0
+    interface aidl android.hardware.boot.IBootControl/default
+
+on fs
+    mount vfat /dev/block/by-name/GBLOG /oem/logs nosuid nodev noexec rw uid=2000,gid=2000,fmask=0077,dmask=0077,context=u:object_r:shell_data_file:s0
+    start gbrunch.boot
+    mount_all /oem/fstab.android-desktop --early
+
+on late-fs
+    mount_all /oem/fstab.android-desktop --late
+
+on post-fs-data
+    insmod /system/lib/modules/rfkill.ko
+    insmod /system/lib/modules/pps_core.ko
+    insmod /system/lib/modules/ptp.ko
+    insmod /system/lib/modules/libarc4.ko
+
+on init
+    chown root shell /dev/ttyS0
+    chmod 0660 /dev/ttyS0
+
+on boot
+

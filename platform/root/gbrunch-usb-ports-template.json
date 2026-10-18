@@ -1,0 +1,191 @@
+{
+  "@GBOS_PORT0@": {
+    "portName": "port0",
+    "connectorType": "c",
+    "physicalLocation": {
+      "panel": "right",
+      "horizontalPosition": "right",
+      "verticalPosition": "upper",
+      "lid": false
+    },
+    "capabilities": [
+      "host_mode",
+      "dbc",
+      "typec_debug_accessory_mode"
+    ],
+    "powerRolesSupported": [
+      "none",
+      "sink",
+      "source"
+    ],
+    "dataRolesSupported": [
+      "none",
+      "host",
+      "device"
+    ],
+    "linkedHostUSBPortPaths": [
+      "/sys/devices/pci0000:00/0000:00:0d.0/usb2/2-0:1.0/usb2-port1",
+      "/sys/devices/pci0000:00/0000:00:14.0/usb3/3-0:1.0/usb3-port1"
+    ],
+    "linkedDeviceUSBPortPaths": [],
+    "linkedDisplayPaths": [],
+    "linkedUsb4TbtPaths": [
+      "/sys/devices/pci0000:00/0000:00:0d.2/domain0/0-0/usb4_port1"
+    ],
+    "linkedPowerSupplyPaths": [
+      "@GBOS_PSY0@"
+    ],
+    "usbRootHubSpeedsSupported": [
+      "usb3_20_gbitps",
+      "usb2_480_mbitps"
+    ],
+    "usb4TbtSpeedsSupported": [
+      "usb4_20_gbitps",
+      "usb4_40_gbitps"
+    ],
+    "displayLinkSpeedsSupported": [
+      "rbr_1p62",
+      "hbr_2p7",
+      "hbr2_5p4",
+      "hbr3_8p1",
+      "uhbr_10",
+      "uhbr_20"
+    ],
+    "sourcePowerCapabilities": [
+      "TODO(b/479376994)"
+    ],
+    "sinkPowerCapabilities": [
+      "TODO(b/479376994)"
+    ]
+  },
+  "@GBOS_PORT1@": {
+    "portName": "port1",
+    "connectorType": "c",
+    "physicalLocation": {
+      "panel": "left",
+      "horizontalPosition": "left",
+      "verticalPosition": "upper",
+      "lid": false
+    },
+    "capabilities": [
+      "host_mode",
+      "dbc"
+    ],
+    "powerRolesSupported": [
+      "none",
+      "sink",
+      "source"
+    ],
+    "dataRolesSupported": [
+      "none",
+      "host",
+      "device"
+    ],
+    "linkedHostUSBPortPaths": [
+      "/sys/devices/pci0000:00/0000:00:0d.0/usb2/2-0:1.0/usb2-port3",
+      "/sys/devices/pci0000:00/0000:00:14.0/usb3/3-0:1.0/usb3-port2"
+    ],
+    "linkedDeviceUSBPortPaths": [],
+    "linkedDisplayPaths": [],
+    "linkedUsb4TbtPaths": [
+      "/sys/devices/pci0000:00/0000:00:0d.3/domain1/1-0/usb4_port1"
+    ],
+    "linkedPowerSupplyPaths": [
+      "@GBOS_PSY1@"
+    ],
+    "usbRootHubSpeedsSupported": [
+      "usb3_20_gbitps",
+      "usb2_480_mbitps"
+    ],
+    "usb4TbtSpeedsSupported": [
+      "usb4_20_gbitps",
+      "usb4_40_gbitps"
+    ],
+    "displayLinkSpeedsSupported": [
+      "rbr_1p62",
+      "hbr_2p7",
+      "hbr2_5p4",
+      "hbr3_8p1",
+      "uhbr_10",
+      "uhbr_20"
+    ],
+    "sourcePowerCapabilities": [
+      "TODO(b/479376994)"
+    ],
+    "sinkPowerCapabilities": [
+      "TODO(b/479376994)"
+    ]
+  },
+  "/sys/devices/pci0000:00/0000:00:14.0/usb4/4-0:1.0/usb4-port1": {
+    "portName": "port2",
+    "connectorType": "a",
+    "physicalLocation": {
+      "panel": "left",
+      "horizontalPosition": "right",
+      "verticalPosition": "upper",
+      "lid": false
+    },
+    "capabilities": [
+      "host_mode",
+      "dbc"
+    ],
+    "powerRolesSupported": [
+      "source"
+    ],
+    "dataRolesSupported": [
+      "host"
+    ],
+    "linkedHostUSBPortPaths": [
+      "/sys/devices/pci0000:00/0000:00:14.0/usb4/4-0:1.0/usb4-port1",
+      "/sys/devices/pci0000:00/0000:00:14.0/usb3/3-0:1.0/usb3-port4"
+    ],
+    "linkedDeviceUSBPortPaths": [],
+    "linkedDisplayPaths": [],
+    "linkedUsb4TbtPaths": [],
+    "linkedPowerSupplyPaths": [],
+    "usbRootHubSpeedsSupported": [
+      "usb3_10_gbitps",
+      "usb2_480_mbitps"
+    ],
+    "usb4TbtSpeedsSupported": [],
+    "displayLinkSpeedsSupported": [],
+    "sourcePowerCapabilities": [],
+    "sinkPowerCapabilities": []
+  },
+  "/sys/devices/pci0000:00/0000:00:14.0/usb4/4-0:1.0/usb4-port2": {
+    "portName": "port3",
+    "connectorType": "a",
+    "physicalLocation": {
+      "panel": "right",
+      "horizontalPosition": "left",
+      "verticalPosition": "upper",
+      "lid": false
+    },
+    "capabilities": [
+      "host_mode",
+      "dbc"
+    ],
+    "powerRolesSupported": [
+      "source"
+    ],
+    "dataRolesSupported": [
+      "host"
+    ],
+    "linkedHostUSBPortPaths": [
+      "/sys/devices/pci0000:00/0000:00:14.0/usb4/4-0:1.0/usb4-port2",
+      "/sys/devices/pci0000:00/0000:00:14.0/usb3/3-0:1.0/usb3-port5"
+    ],
+    "linkedDeviceUSBPortPaths": [],
+    "linkedDisplayPaths": [],
+    "linkedUsb4TbtPaths": [],
+    "linkedPowerSupplyPaths": [],
+    "usbRootHubSpeedsSupported": [
+      "usb3_10_gbitps",
+      "usb2_480_mbitps"
+    ],
+    "usb4TbtSpeedsSupported": [],
+    "displayLinkSpeedsSupported": [],
+    "sourcePowerCapabilities": [],
+    "sinkPowerCapabilities": []
+  }
+}
