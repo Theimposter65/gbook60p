@@ -9,7 +9,7 @@ Supported profile: **MOTOROLA 83NY, Intel GPU 8086:7d51, at least 16 GB RAM**. T
 ## Install
 
 1. Back up Windows and save your BitLocker/device-encryption recovery key. Use **Windows Disk Management** to create one contiguous **128 GiB unallocated extent** for the default 120 GiB Android storage. Leave it unformatted. The installer never shrinks or formats an existing partition.
-2. Prepare an Ubuntu 24.04 or newer live USB. Disable Windows Fast Startup and Secure Boot, then press **F12** at startup and boot the USB in UEFI mode. Choose **Try Ubuntu**. Keep the kit and its build files on a **separate external ext4 filesystem with 25 GiB free**; FAT32 cannot hold the preparation files.
+2. Prepare an Ubuntu 24.04 or newer live USB. Disable Windows Fast Startup and Secure Boot, then press **F12** at startup and boot the USB in UEFI mode. Choose **Try Ubuntu**. Keep the kit and its build files on a **separate external ext4 filesystem with 32 GiB free**; this allows room for the recovery ZIP, extracted parts, payload and image preparation. FAT32 cannot hold the preparation files.
 3. Install the host tools, authenticate GitHub CLI with access to this private repository, and clone:
 
    ```sh
