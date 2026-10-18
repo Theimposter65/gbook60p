@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+here=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+command=${1:-help}
+if [ "$#" -gt 0 ]; then shift; fi
+case "$command" in
+ doctor) exec python3 "$here/tools/doctor.py" "$@";;
+ assets) exec python3 "$here/tools/assets.py" "$@";;
+ setup) exec python3 "$here/tools/setup.py" "$@";;
+ build) exec python3 "$here/tools/build.py" "$@";;
+ plan|install) exec python3 "$here/tools/install.py" "$command" "$@";;
+ test) exec python3 -m unittest discover -s "$here/tests" -v;;
+ help|--help|-h)
+  cat <<'EOF'
+gbook60p — Motobook 60 Pro Googlebook install kit
+
+  ./gbook60p doctor
+  ./gbook60p setup                             # guided installation
+  ./gbook60p assets --archive /path/gbook60p-assets-v0.1.0.tar.gz
+  ./gbook60p assets --download                 # explicit private-release download
+  ./gbook60p build --recovery /path/recovery.zip
+  sudo ./gbook60p plan --disk /dev/nvmeXn1 --userdata-gib 120
+  sudo ./gbook60p install --plan work/install-plan.json --backup /media/USB/gbook-backup
+  ./gbook60p test
+
+Read README.md first. Installation runs from native Linux live USB, never WSL.
+Plan is read-only. Install requires typing the target disk serial in a terminal.
+No Windows resizing, whole-disk erase, in-place update or automatic reboot.
+EOF
+  ;;
+ *) echo "Unknown command. Run ./gbook60p help" >&2;exit 2;;
+esac
