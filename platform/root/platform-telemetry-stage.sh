@@ -7,9 +7,13 @@ T=/gbos/gbrunch/telemetry
 mkdir -p "$T" || return 1
 cp /gbos-telemetry /gbos/gbrunch/gbos-telemetry || return 1
 chmod 0755 /gbos/gbrunch/gbos-telemetry
+# The copy above is the Android (NDK) build for the runtime service; it needs
+# /system/bin/linker64. Pre-Android steps here use the static build.
+TB=/gbos-telemetry-static
+[ -x "$TB" ] || TB=/gbos-telemetry
 cp /platform-telemetry.rc /gbos/gbrunch/platform-telemetry.rc || return 1
 modprobe x86_pkg_temp_thermal >> "$L/platform-telemetry.txt" 2>&1 || true
-if /gbos-telemetry --thermal '' "$T/thermal_info_config.json"; then
+if "$TB" --thermal '' "$T/thermal_info_config.json"; then
  if echo 'b5de8e2c47ee9b4d0d7b730deb0500e8e36f606adef4bd941597c26d5de6868d  /new/vendor/etc/thermal_info_config.json' | sha256sum -c - >> "$L/platform-telemetry.txt" 2>&1 && echo 'd40c791fac016b823c192b51c4816f8e43187f01e7b03920de7662e36d072ed7  /new/vendor/etc/thermal/lapis/thermal_info_config.json' | sha256sum -c - >> "$L/platform-telemetry.txt" 2>&1; then
   cp "$T/thermal_info_config.json" /gbos/gbrunch/peripherals/vendor-etc/thermal_info_config.json
   cp "$T/thermal_info_config.json" /gbos/gbrunch/peripherals/vendor-etc/thermal/lapis/thermal_info_config.json
@@ -19,7 +23,7 @@ else
  echo 'No valid Intel package sensor; original thermal config retained' >> "$L/platform-telemetry.txt"
 fi
 . /battery-view-stage.sh
-gbos_battery_view "$T" /sys/class/power_supply/BAT0 /gbos-telemetry >> "$L/platform-telemetry.txt" 2>&1 || true
+gbos_battery_view "$T" /sys/class/power_supply/BAT0 "$TB" >> "$L/platform-telemetry.txt" 2>&1 || true
 # UCSI online describes a connected port, including source-mode earphones.
 # Preserve the physical source view; Android sees incoming power only while
 # that connector's actual Type-C power role is sink. Audio/data paths stay live.
@@ -33,7 +37,7 @@ for index in 0 1; do
  case "$portpath" in "$controller"/*) ;; *) echo "USB-C $index: controller mapping unproven; supply untouched" >> "$L/platform-telemetry.txt"; continue;; esac
  mkdir -p "$T/usb$index-source"
  if mount --bind "$psy" "$T/usb$index-source"; then
-  if /gbos-telemetry --usb-online "$T/usb$index-source" "$port/power_role" "$T/usb$index-online" && mount --bind "$T/usb$index-online" "$psy/online"; then
+  if "$TB" --usb-online "$T/usb$index-source" "$port/power_role" "$T/usb$index-online" && mount --bind "$T/usb$index-online" "$psy/online"; then
    echo "$port/power_role" > "$T/usb$index-role"
    touch "$T/platform-ready"
    echo "USB-C $index: charging online filtered by actual sink power role" >> "$L/platform-telemetry.txt"

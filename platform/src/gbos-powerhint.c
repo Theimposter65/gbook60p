@@ -18,6 +18,7 @@ static int token(const char*s,const char*t){size_t n=strlen(t);for(const char*p=
 static int safe(const char*s){return strspn(s,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_/-., ")==strlen(s);}
 static void node(const char *name,const char *path,const char *values,int def,int prop){int n=snprintf(nodes+nn,sizeof(nodes)-nn,"%s{\"Name\":\"%s\",\"Path\":\"%s\",\"Values\":[%s],\"DefaultIndex\":%d,\"ResetOnInit\":true%s}",nc++?",":"",name,path,values,def,prop?",\"Type\":\"Property\"":"");if(n<0||(size_t)n>=sizeof(nodes)-nn)exit(3);nn+=n;}
 static void action(const char*hint,const char*name,const char*value,int duration){int n=snprintf(actions+na,sizeof(actions)-na,"%s{\"PowerHint\":\"%s\",\"Node\":\"%s\",\"Duration\":%d,\"Value\":\"%s\"}",ac++?",":"",hint,name,duration,value);if(n<0||(size_t)n>=sizeof(actions)-na)exit(3);na+=n;}
+static int parselist(const char*list,int*set){char copy[2048];if(strlen(list)>=sizeof(copy)||strspn(list,"0123456789,-")!=strlen(list))return 0;strcpy(copy,list);char*save=NULL;for(char*t=strtok_r(copy,",",&save);t;t=strtok_r(NULL,",",&save)){int a,b;char extra;if(sscanf(t,"%d-%d%c",&a,&b,&extra)==2){}else if(sscanf(t,"%d%c",&a,&extra)==1)b=a;else return 0;if(a<0||b<a||b>=256)return 0;for(int i=a;i<=b;i++)set[i]=1;}return 1;}
 static void cpulist(const int*set,char*out,size_t size){out[0]=0;for(int i=0;i<256;i++)if(set[i]){char v[12];snprintf(v,sizeof(v),"%s%d",out[0]?",":"",i);if(strlen(out)+strlen(v)+1>=size)exit(3);strcat(out,v);}}
 /* Linux topology types use1 for Atom; Intel CPUID leaf1A uses0x20.
  * If sysfs lacks the type, inspect CPUID on each real CPU, restoring our own
@@ -36,10 +37,15 @@ static int atom_cpu(int cpu){
 int main(int argc,char**argv){
  if(argc==3&&strcmp(argv[1],"--root")==0)root=argv[2];else if(argc!=1)return 2;
  char online[2048];if(!readval("/sys/devices/system/cpu/online",online,sizeof(online))||strspn(online,"0123456789,-")!=strlen(online))return 4;
- int all[256]={0},efficient[256]={0};char copy[2048];strcpy(copy,online);char*save=NULL;
- for(char*t=strtok_r(copy,",",&save);t;t=strtok_r(NULL,",",&save)){int a,b;char extra;if(sscanf(t,"%d-%d%c",&a,&b,&extra)==2){}else if(sscanf(t,"%d%c",&a,&extra)==1)b=a;else return 4;if(a<0||b<a||b>=256)return 4;for(int i=a;i<=b;i++)all[i]=1;}
- int total=0,etotal=0;for(int i=0;i<256;i++)if(all[i]){total++;char path[256],v[64];snprintf(path,sizeof(path),"/sys/devices/system/cpu/cpu%d/topology/core_type",i);long type=readval(path,v,sizeof(v))?strtol(v,NULL,0):0;if(type==1||type==0x20||(!type&&atom_cpu(i))){efficient[i]=1;etotal++;}}
+ int all[256]={0},efficient[256]={0};if(!parselist(online,all))return 4;
+ /* Hybrid perf PMUs name the efficient cores directly (Arrow Lake-H: Atom
+  * E-cores plus low-power E-cores). Topology/CPUID remain the fallback. */
+ int pmu[256]={0},pmuseen=0;const char*pmus[]={"/sys/devices/cpu_atom/cpus","/sys/devices/cpu_lowpower/cpus"};
+ for(int i=0;i<2;i++){char v[2048];if(readval(pmus[i],v,sizeof(v))&&parselist(v,pmu))pmuseen=1;}
+ int total=0,etotal=0;for(int i=0;i<256;i++)if(all[i]){total++;if(pmuseen){if(pmu[i]){efficient[i]=1;etotal++;}continue;}char path[256],v[64];snprintf(path,sizeof(path),"/sys/devices/system/cpu/cpu%d/topology/core_type",i);long type=readval(path,v,sizeof(v))?strtol(v,NULL,0):0;if(type==1||type==0x20||(!type&&atom_cpu(i))){efficient[i]=1;etotal++;}}
  if(!total)return 4;
+ /* All-efficient or no-efficient topologies keep every CPU for background. */
+ if(etotal==total)etotal=0;
  char cpus[2048],ecpus[2048];cpulist(all,cpus,sizeof(cpus));cpulist(etotal?efficient:all,ecpus,sizeof(ecpus));
  fprintf(stderr,"Online CPUs=%s; background CPUs=%s; Intel Atom topology entries=%d\n",cpus,ecpus,etotal);
  node("ProfileState","vendor.powerhal.gbos.profile","\"battery\",\"boost\",\"performance\"",2,1);
@@ -48,7 +54,24 @@ int main(int argc,char**argv){
  for(int i=0;i<7;i++){char path[256],name[64],values[4096];snprintf(path,sizeof(path),"/dev/cpuset/%s/cpus",groups[i]);if(!exists(path))continue;snprintf(name,sizeof(name),"CpuSet%d",i);snprintf(values,sizeof(values),"\"%s\"",i>=4?ecpus:cpus);node(name,path,values,0,0);action("LOW_POWER",name,i>=4?ecpus:cpus,0);}
  const char*u="/dev/cpuctl/top-app/cpu.uclamp.min";
  if(exists(u)){node("TopAppUclamp",u,"\"0\",\"15\",\"25\"",0,0);action("LOW_POWER","TopAppUclamp","0",0);action("LAUNCH","TopAppUclamp","25",1000);action("INTERACTION","TopAppUclamp","15",200);}
- char pattern[4096];snprintf(pattern,sizeof(pattern),"%s/sys/devices/system/cpu/cpufreq/policy*/energy_performance_available_preferences",root);glob_t matches={0};
+ /* Xe render GT: finite minimum-frequency floors from the hardware's own RPe
+  * and RP0 values. The boot minimum stays the default; no maximum is changed. */
+ char pattern[4096];snprintf(pattern,sizeof(pattern),"%s/sys/class/drm/card*/device/tile0/gt0/freq0/min_freq",root);glob_t gpus={0};
+ if(glob(pattern,0,NULL,&gpus)==0&&gpus.gl_pathc){
+  char path[4096],dir[4096],rpe[32],rp0[32],cur[32],max[32];snprintf(path,sizeof(path),"%s",gpus.gl_pathv[0]+strlen(root));snprintf(dir,sizeof(dir),"%s",path);*strrchr(dir,'/')=0;
+  char p1[4200],p2[4200],p3[4200];snprintf(p1,sizeof(p1),"%s/rpe_freq",dir);snprintf(p2,sizeof(p2),"%s/rp0_freq",dir);snprintf(p3,sizeof(p3),"%s/max_freq",dir);
+  if(safe(path)&&readval(p1,rpe,sizeof(rpe))&&readval(p2,rp0,sizeof(rp0))&&readval(p3,max,sizeof(max))&&readval(path,cur,sizeof(cur))&&strspn(rpe,"0123456789")==strlen(rpe)&&strspn(rp0,"0123456789")==strlen(rp0)&&strspn(cur,"0123456789")==strlen(cur)&&strspn(max,"0123456789")==strlen(max)){
+   long e=atol(rpe),z=atol(rp0),c=atol(cur),m=atol(max);
+   if(c>0&&c<=e&&e<=z&&z<=m){
+    /* Higher floors first so a launch outranks an interaction. */
+    const char*choices[]={rp0,rpe,cur};const char*unique[3];int count=0,def=0;char vals[256]="";
+    for(int j=0;j<3;j++){int found=0;for(int k=0;k<count;k++)if(!strcmp(unique[k],choices[j]))found=1;if(found)continue;unique[count]=choices[j];if(!strcmp(choices[j],cur))def=count;snprintf(vals+strlen(vals),sizeof(vals)-strlen(vals),"%s\"%s\"",count?",":"",choices[j]);count++;}
+    node("GpuMinFreq",path,vals,def,0);action("LAUNCH","GpuMinFreq",rp0,1000);action("INTERACTION","GpuMinFreq",rpe,200);
+    fprintf(stderr,"Xe GT0 %s: default=%s, interaction=%s, launch=%s MHz (max %s unchanged)\n",path,cur,rpe,rp0,max);
+   }
+  }
+ }globfree(&gpus);
+ snprintf(pattern,sizeof(pattern),"%s/sys/devices/system/cpu/cpufreq/policy*/energy_performance_available_preferences",root);glob_t matches={0};
  if(glob(pattern,0,NULL,&matches)==0){for(size_t i=0;i<matches.gl_pathc;i++){
   const char*rel=matches.gl_pathv[i]+strlen(root);char avail[1024],path[4096],name[64];if(!readval(rel,avail,sizeof(avail)))continue;
   snprintf(path,sizeof(path),"%s",rel);char*tail=strrchr(path,'/');if(!tail)continue;strcpy(tail+1,"energy_performance_preference");if(!exists(path)||!safe(path))continue;

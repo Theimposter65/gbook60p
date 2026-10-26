@@ -12,11 +12,14 @@ if echo 'cebf688e04873249f1f8d3a3c5898d2fdcd44952f27bebcea60bbbbcb1d85531  /vend
 fi
 # Native CPU-policy comparison completed and retained; no repeat startup probe.
 if "$base/powerhint-generator" > "$base/powerhint-generated.json"; then
- chmod 0644 "$base/powerhint-generated.json"
- cp "$base/powerhint-generated.json" /vendor/etc/powerhint.json || exit 1
- setprop vendor.powerhal.gbos.ready 1
- echo 'Generated hardware-specific performance power hints; enabling native Power HAL'
+ echo 'Generated hardware-specific performance power hints'
 else
- echo 'Generator refused unsupported topology; power configuration left unchanged'
- exit 1
+ # system_server and SurfaceFlinger block waiting for IPower; never leave it
+ # unstarted. This minimal configuration has no hardware nodes at all.
+ echo 'Generator refused unsupported topology; using minimal hint-free configuration'
+ echo '{"Nodes":[{"Name":"ProfileState","Path":"vendor.powerhal.gbos.profile","Values":["battery","boost","performance"],"DefaultIndex":2,"ResetOnInit":true,"Type":"Property"}],"Actions":[]}' > "$base/powerhint-generated.json"
 fi
+chmod 0644 "$base/powerhint-generated.json"
+cp "$base/powerhint-generated.json" /vendor/etc/powerhint.json || echo 'Configuration copy failed; Power HAL keeps the existing file'
+setprop vendor.powerhal.gbos.ready 1
+echo 'Enabling native Power HAL'

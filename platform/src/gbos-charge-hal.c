@@ -16,7 +16,8 @@ static int readnum(const char *path,int *value){char p[1024],buf[64],*end;snprin
 static int writevalue(const char *path,int value){char p[1024],buf[32];snprintf(p,sizeof(p),"%s%s",root,path);int fd=open(p,O_WRONLY|O_CLOEXEC|O_NOFOLLOW);if(fd<0)return 0;int n=snprintf(buf,sizeof(buf),"%d\n",value);int ok=write(fd,buf,(size_t)n)==n;close(fd);return ok;}
 static int sustain(int lower,int upper){
  if(lower==-1&&upper==-1){lower=0;upper=100;}
- if(lower<0||upper<1||upper>100||lower>=upper)return -3;
+ /* The desktop framework enables its charge limit as sustain(80,80). */
+ if(lower<0||upper<1||upper>100||lower>upper)return -3;
  const char*start="/sys/class/power_supply/BAT0/charge_control_start_threshold";
  const char*end="/sys/class/power_supply/BAT0/charge_control_end_threshold";
  int oldstart,oldend;
@@ -32,7 +33,7 @@ static int sustain(int lower,int upper){
   if(!readnum(start,&actualstart)||!readnum(end,&actualend)||actualstart!=lower||actualend!=upper){writevalue(end,100);writevalue(start,oldstart);writevalue(end,oldend);return -5;}
   return 0;
  }
- if(!((upper==100&&lower==0)||(upper==80&&lower>=75&&lower<80)))return -7;
+ if(!((upper==100&&lower==0)||(upper==80&&lower>=75&&lower<=80)))return -7;
  for(int i=0;i<8;i++){
   char node[160],driver[1024],path[1024],target[1024];int old,actual;
   snprintf(node,sizeof(node),"/sys/bus/acpi/devices/VPC2004:%02x/conservation_mode",i);

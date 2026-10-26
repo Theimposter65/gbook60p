@@ -12,5 +12,3 @@ cp /power-efficiency-apply.sh /gbos/gbrunch/power-efficiency-apply.sh || return 
 cp /power-efficiency.rc /gbos/gbrunch/power-efficiency.rc || return 1
 chmod 0644 /gbos/gbrunch/power-efficiency-apply.sh /gbos/gbrunch/power-efficiency.rc
 cp /power-policy-powertool.rc /gbos/gbrunch/peripherals/vendor-etc/init/powertool.rc || return 1
-cp /gbos-cpu-policy-probe /gbos/gbrunch/gbos-cpu-policy-probe || return 1
-chmod 0755 /gbos/gbrunch/gbos-cpu-policy-probe
