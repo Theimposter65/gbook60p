@@ -53,14 +53,21 @@ payload_kb=$(du -sk /ram-source/gbos /ram-source/EFI/GBRUNCH/vendor.erofs /ram-s
 available_kb=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)
 [ "$available_kb" -gt "$((payload_kb + 3 * 1024 * 1024))" ] || stop 'Insufficient available RAM'
 mount -t tmpfs -o size=6G,mode=0755 tmpfs /gbos || stop 'RAM payload filesystem failed'
-log 'Copying cached system and compatibility images to RAM'
-cp -a /ram-source/gbos /gbos/ || stop 'System payload copy failed'
+# super.img is mapped read-only from the SSD; only its small companions,
+# firmware and the hash-checked compatibility images are copied into RAM.
+log 'Mapping system images from SSD; copying compatibility images to RAM'
+mkdir -p /gbos/gbos || stop 'System payload directory failed'
+for entry in /ram-source/gbos/*; do
+ [ "${entry##*/}" = super.img ] && continue
+ cp -a "$entry" /gbos/gbos/ || stop 'System payload copy failed'
+done
+SUPER=/ram-source/gbos/super.img
+[ -f "$SUPER" ] || stop 'System image missing'
 mkdir -p /gbos/gbrunch
 for name in vendor.erofs compat.ext4; do cp /ram-source/EFI/GBRUNCH/$name /gbos/gbrunch/$name || stop 'Compatibility copy failed'; done
 . /gbrunch-hashes.cfg
 echo "$GB_VENDOR_HASH  /gbos/gbrunch/vendor.erofs" | sha256sum -c - || stop 'Vendor image checksum mismatch'
 echo "$GB_COMPAT_HASH  /gbos/gbrunch/compat.ext4" | sha256sum -c - || stop 'Compatibility image checksum mismatch'
-umount /ram-source || stop 'Cannot release source mount'
 G=/gbos/gbos
 . /hy-storage.sh
 # The shared helper is used for identity and power validation only. Its formatter
@@ -166,13 +173,18 @@ for pass in 1 2 3; do
  mdev -s
 done
 log 'Mounting original Google system images and independent vendor/security compatibility views'
-losetup -r /dev/loop7 "$G/super.img" || stop 'Super image mapping failed'
+if ! losetup -r /dev/loop7 "$SUPER"; then
+ log 'SSD system image mapping failed; using a RAM copy'
+ cp "$SUPER" "$G/super.img" || stop 'System payload copy failed'
+ SUPER=$G/super.img
+ losetup -r /dev/loop7 "$SUPER" || stop 'Super image mapping failed'
+fi
 ln -sf /dev/loop7 /dev/block/by-name/super
 i=0
 while read name start sectors; do
  case "$name" in system_a) target=/new;; *) target=/new/${name%_a};; esac
  mkdir -p "$target" 2>/dev/null
- if [ "$name" = vendor_a ]; then image=/gbos/gbrunch/vendor.erofs;offset=0;else image=$G/super.img;offset=$((start * 512));fi
+ if [ "$name" = vendor_a ]; then image=/gbos/gbrunch/vendor.erofs;offset=0;else image=$SUPER;offset=$((start * 512));fi
  losetup -r -o "$offset" /dev/loop$i "$image" && mount -t erofs -o ro /dev/loop$i "$target" || stop "Mount failed: $name"
  i=$((i+1))
 done < "$G/super.layout"
@@ -211,6 +223,8 @@ mount --bind /gbos/gbrunch/runtime-init.rc /new/oem/init.gbrunch.rc || stop 'Can
 . /platform-telemetry-stage.sh || log 'Optional platform telemetry staging skipped; native boot continues'
 . /power-profile-stage.sh
 gbos_power_profile_stage /sys /new/vendor /new/system/framework/framework-res.apk /gbos/gbrunch/power-profile /gbos-power-profile.apk >> "$L/power-profile.txt" 2>&1 || log 'Optional battery accounting profile skipped; original Android resources retained'
+. /display-config-stage.sh
+gbos_display_config_stage /sys /new/vendor /gbos/gbrunch/displayconfig /display_id_4633222744048893184.xml >> "$L/display-config.txt" 2>&1 || log 'Optional panel display configuration skipped; framework defaults retained'
 # Release: automatic performance sampler removed.
 for pair in '22 data.ext4 userdata' '23 metadata.ext4 metadata' '24 logs.fat GBLOG'; do
  set -- $pair
@@ -231,6 +245,12 @@ mount -t tmpfs -o mode=0755 tmpfs /new/mnt
 sed 's#^    write /dev/sys/block/by-name/\(userdata\|rootdisk\)/queue/discard_max_bytes 134217728$#    write /dev/sys/block/by-name/\1/queue/discard_max_bytes 0#' /new/system/etc/init/hw/init.rc > /gbos/gbrunch/system-init.rc
 mount --bind /gbos/gbrunch/system-init.rc /new/system/etc/init/hw/init.rc || stop 'Discard policy overlay failed'
 mount --move /gbos /new/postinstall || stop 'Cannot retain RAM compatibility images'
+if [ "$SUPER" = "$G/super.img" ]; then
+ umount /ram-source || stop 'Cannot release source mount'
+else
+ mkdir -p /new/postinstall/gbrunch-source || stop 'Cannot create retained source mount point'
+ mount --move /ram-source /new/postinstall/gbrunch-source || stop 'Cannot retain system image source mount'
+fi
 # vold unmountAll clears /mnt/* at startup. Keep loop backing storage outside
 # that tree, beneath the retained RAM payload mount; never create on EROFS.
 mkdir -p /new/postinstall/gbrunch-backing || stop 'Cannot create retained backing mount point'

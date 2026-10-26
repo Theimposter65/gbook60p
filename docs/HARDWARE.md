@@ -4,13 +4,13 @@ The reference machine is MOTOROLA DMI product **83NY** (Motobook 60 Pro), Intel 
 
 | Component | Implementation / evidence | Remaining limits |
 | --- | --- | --- |
-| Graphics | Matching stock **xe**, native render node, Intel Vulkan/ANGLE; 2880×1800 at 120 Hz observed on the prior installation | No i915 fallback or blanket software renderer. A one-device Minigbm classifier addition is pinned to the exact library hashes. HDR and Widevine L1 are not provided. |
+| Graphics | Matching stock **xe**, native render node, Intel Vulkan/ANGLE; 2880×1800 at 120 Hz observed on the prior installation | No i915 fallback or blanket software renderer. A one-device Minigbm classifier addition is pinned to the exact library hashes. Stock Google HWC colour pipeline, BT.2020 output and persistent HDR are now kept (needs a native retest); `androidboot.gbos_display=legacy` restores the previous SDR-only handling. Widevine L1 is not provided. |
 | Wi-Fi | Realtek RTL8922AE stack rebuilt for the exact stock Google kernel ABI; native Wi-Fi previously worked | Different wireless hardware is not validated. |
 | Speakers, USB audio, mic | SOF ARL firmware/topology, HDA mixer helper and audio config; all previously worked | Latest BE02T false-charging filter needs a native retest. The exact device quirk never changes electrical USB roles. |
 | Camera | Stock USB camera provider plus DMA-BUF heap and legacy-provider exclusion | Reference USB camera previously worked; other cameras are untested. |
-| Brightness | Native Intel panel/backlight | Previously worked. |
+| Brightness | Native Intel panel/backlight; EDID-pinned ATNA40HQ01 display configuration (1107 nit peak, 497 nit SDR) staged in RAM | Nits map and HDR headroom enable SDR dimming; needs a native retest. Other panels keep framework defaults. |
 | Battery | Energy-to-charge/current aliases and periodic IHealth update; stable alias inodes | Latest refresh needs a native retest. Unknown cycle count/current/temp values are not invented. |
-| Power / ADPF | Runtime core detection, foreground on all available CPUs, efficient-core background sets, finite launch/interaction hints | EPP defaults preserve the previous turbo fix. No raised thermal/power limits or fabricated frequency tables. No benchmark improvement promised. |
+| Power / ADPF | Runtime core detection (hybrid PMU sysfs, then topology/CPUID), foreground on all available CPUs, efficient-core background sets, finite launch/interaction hints including Xe RPe/RP0 GPU minimum-frequency floors | EPP defaults preserve the previous turbo fix. No raised thermal/power limits or fabricated frequency tables. No benchmark improvement promised. |
 | Thermal | Native Intel package sensor mapped to Android telemetry | Existing protection/trips and cooling are retained. |
 | Charge control | Exact 83NY ACPI conservation interface, no fan/EC/general platform driver | Unsupported policies return errors. |
 | NPU | Native Intel module, firmware and device-access staging | Successful Gemini/AI Core inference is **not established**. AI Core patches were removed. |

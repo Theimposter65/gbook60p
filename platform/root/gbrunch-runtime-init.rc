@@ -155,10 +155,13 @@ on early-init
     write /sys/module/drm/parameters/debug 0
     chmod 0644 /sys/module/firmware_class/parameters/path
     chmod 0644 /sys/module/drm/parameters/debug
-    setprop vendor.hwc.drm.force_color_mode -1
-    setprop vendor.hwc.drm.persistent_hdr false
-    setprop vendor.hwc.drm.enable_color_pipeline false
+    # HWC colour management keeps the stock vendor values (colour pipeline,
+    # DISPLAY_BT2020 and persistent HDR); they provide HDR and SDR dimming.
     setprop vendor.hwc.use_log_gamma_lut true
+    # Raised physical brightness floor (stock 0.001), applied by the HWC's
+    # min-brightness scaling. The display config's backlight map must start
+    # at 0.0, so the floor cannot live there.
+    setprop vendor.hwc.drm.min_display_brightness 0.0069735
     setprop qemu.sf.lcd_density 260
     setprop ro.vendor.boot_security_patch 2026-09-01
     write /dev/kmsg "GBRUNCH: independent compatibility init loaded"
@@ -166,6 +169,18 @@ on early-init
     mount none /oem/framework-manifest.xml /system_ext/etc/vintf/manifest.xml bind
     mount none /oem/security-manifest.xml /vendor/etc/vintf/manifest/android.hardware.gatekeeper-service.trusty.xml bind
     mount none /oem/weaver-manifest.xml /vendor/etc/vintf/manifest/android.hardware.weaver-service.android-desktop.xml bind
+
+# Fallback selected by adding androidboot.gbos_display=legacy to the GRUB
+# command line: previous SDR-only HWC colour handling.
+on early-init && property:ro.boot.gbos_display=legacy
+    setprop vendor.hwc.drm.force_color_mode -1
+    setprop vendor.hwc.drm.persistent_hdr false
+    setprop vendor.hwc.drm.enable_color_pipeline false
+
+# Settings hides the HDR boost slider by this build's default; the panel
+# configuration provides the SDR/HDR ratio map the slider scales.
+on property:sys.boot_completed=1
+    setprop persist.sys.settings.hide_hdr_brightness_slider false
 
 service gbrunch.keymint /oem/keymint/bin/hw/android.hardware.security.keymint-service.nonsecure
     class early_hal
