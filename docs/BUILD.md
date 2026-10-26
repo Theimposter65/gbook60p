@@ -11,6 +11,8 @@ The normal path uses `./gbook60p setup`. A local Linux build also works without 
 
 `profiles/assets.json` pins the separate precompiled archive and its internal file manifest. Extraction refuses symlinks, absolute paths, traversal, duplicate names and mismatched hashes. The runtime includes its matching loader/libraries; it does not replace Linux host packages. Kernel compilation is not needed.
 
+The v0.1.0 archive still contains the original precompiled C helpers. Changes to `platform/src/gbos-powerhint.c` and `platform/src/gbos-charge-hal.c` are source updates only until a rebuilt asset archive is published and its pins are updated. The payload builder overlays shell, XML and init files from this checkout, but does not compile those C helpers.
+
 Build steps:
 
 1. Verify all cached assets and Google input hashes.

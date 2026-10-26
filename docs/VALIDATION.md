@@ -1,5 +1,7 @@
 # Release validation
 
+Source-update checks on 2026-10-26 passed all 15 offline regression tests, including the new charging-conservation and finite GPU-floor fixtures. Every platform shell file passed its own syntax check, Python sources compiled, and platform XML parsed. These checks do not establish native boot, HDR output, or Android runtime behavior. The v0.1.0 precompiled asset archive was not rebuilt; the payload and byte-comparison evidence below describes the original release.
+
 Offline validation on 2026-10-18, with no VM/Android boot test or physical disk writes:
 
 | Check | Result |
